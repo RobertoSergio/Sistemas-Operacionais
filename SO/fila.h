@@ -16,8 +16,9 @@ typedef struct Fila {
     pthread_mutex_t lock;
 } Fila;
 
-void inicializar_fila(Fila* fila);
-void adicionar_cliente(Fila* fila, Cliente* cliente);
-Cliente* remover_cliente(Fila* fila);
+// Protótipos
+extern void inicializar_fila(Fila* fila);
+extern void adicionar_cliente(Fila* fila, Cliente* cliente);
+extern Cliente* remover_cliente(Fila* fila);
 
 #endif

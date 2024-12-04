@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <fila.h>
+#include "fila.h"
 #include <pthread.h>
 
 void inicializar_fila(Fila* fila) {

@@ -16,8 +16,3 @@ typedef struct Fila {
     Cliente* inicio;
     pthread_mutex_t lock;
 } Fila;
-
-void inicializar_fila(Fila* fila) {
-    fila->inicio = NULL;
-    pthread_mutex_init(&fila->lock, NULL);
-}
