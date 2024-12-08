@@ -27,5 +27,6 @@ typedef struct Fila {
 extern void inicializar_fila(Fila* fila, int clientes, int paciencia);
 extern void adicionar_cliente(Fila* fila, Cliente* cliente);
 extern Cliente* remover_cliente(Fila* fila);
+extern void* menu (void* args);
 
 #endif

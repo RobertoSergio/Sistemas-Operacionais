@@ -95,3 +95,34 @@ Cliente* remover_cliente(Fila* fila) {
     pthread_mutex_unlock(&fila->lock);
     return cliente_removido;
 }
+
+
+void* menu (void* args){
+
+// se nao digitar nada ou algo diferente de q fica aqui, se digitar q sai do while
+	while ((getchar()) != 's'); 
+
+    
+    // Esperando ajustes de semáforos
+
+	//sem_close(sem); // pra liberar o arquivo, porque o writer pode querer escrever = coloca sem em verde
+	// sem_unlink("/sem_printer");
+
+
+    // ANTES DE SAIR
+
+    // o arquivo deve ser esvaziado antes, isto é, o “Analista” deve ser acordado 
+    // tantas vezes quantas forem necessárias para imprimir todos os PID de clientes 
+    // que já haviam sido atendidos.
+
+    /*
+        abrir lista de LNG e imprimir todos os clientes de lá
+
+    
+    */
+
+
+	exit(0);
+	return NULL;
+
+}

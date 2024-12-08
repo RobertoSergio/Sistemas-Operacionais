@@ -30,13 +30,15 @@ int main(int argc, char* argv[]) {
     Fila fila;
     inicializar_fila(&fila, n_clientes, paciencia);
 
-    pthread_t recepcao, atendimento;
+    pthread_t recepcao, atendimento,thread_menu;
 
     pthread_create(&recepcao, NULL, recepcao_thread, &fila);
     pthread_create(&atendimento, NULL, atendimento_thread, &fila);
+    pthread_create(&thread_menu, NULL, menu, NULL);
 
     pthread_join(recepcao, NULL);
     pthread_join(atendimento, NULL);
+    pthread_join(thread_menu, NULL);
 
     return 0;
 }
