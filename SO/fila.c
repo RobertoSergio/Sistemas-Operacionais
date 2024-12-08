@@ -3,9 +3,20 @@
 #include "fila.h"
 #include <pthread.h>
 
-void inicializar_fila(Fila* fila) {
+void inicializar_fila(Fila* fila, int clientes) {
     fila->inicio = NULL;
+    fila->clientes = clientes;
     pthread_mutex_init(&fila->lock, NULL);
+}
+
+void destruir_fila(Fila* fila) {
+    Cliente* atual = fila->inicio;
+    while (atual) {
+        Cliente* proximo = atual->prox;
+        free(atual);
+        atual = proximo;
+    }
+    pthread_mutex_destroy(&fila->lock);
 }
 
 int encontrar_max_prioridade(Cliente* cliente) {

@@ -13,11 +13,12 @@ typedef struct Cliente {
 
 typedef struct Fila {
     Cliente* inicio;
+    int clientes;
     pthread_mutex_t lock;
 } Fila;
 
 // Protótipos
-extern void inicializar_fila(Fila* fila);
+extern void inicializar_fila(Fila* fila, int clientes);
 extern void adicionar_cliente(Fila* fila, Cliente* cliente);
 extern Cliente* remover_cliente(Fila* fila);
 
