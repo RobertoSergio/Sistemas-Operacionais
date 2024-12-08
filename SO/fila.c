@@ -3,9 +3,11 @@
 #include "fila.h"
 #include <pthread.h>
 
-void inicializar_fila(Fila* fila, int clientes) {
+void inicializar_fila(Fila* fila, int clientes, int paciencia) {
     fila->inicio = NULL;
     fila->clientes = clientes;
+    fila->paciencia = paciencia;
+    fila->capacidade = tamanho_maximo;
     pthread_mutex_init(&fila->lock, NULL);
 }
 
