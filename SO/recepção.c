@@ -3,11 +3,13 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <semaphore.h>
 
 void* recepcao_thread(void* args) {
     Fila* fila = (Fila*)args;
-    int n = 10;
-    int x = 1000;
+    printf("\n \nA QUANTIDADE DE CLIENTES DA FILA É %d \n \n \n", fila->clientes);
+    int n = fila->clientes;
+    int x = fila->paciencia;
 
     srand(time(NULL));
     for (int i = 0; i < n || n == 0; i++) {
