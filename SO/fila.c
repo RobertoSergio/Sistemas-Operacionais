@@ -13,13 +13,13 @@ int contador =0;
 
 void inicializar_fila(Fila* fila, int clientes, clock_t inicio) {
     fila->inicio = NULL;
-    fila->clock_inicio = inicio;
     // testar tamanho maximo e quantidade de clientes
-    
+
     fila->capacidade = TAMANHO_MAXIMO;
     fila->tamanho = clientes;
-    sem_init(&fila->sem_lock, 0, 1);  
-
+    sem_init(&fila->sem_lock, 0, 1);
+    sem_init(&fila->sem_fim, 0, 0); 
+    fila->clock_inicio = inicio;
 }
 
 void destruir_fila(Fila* fila) {
@@ -110,7 +110,6 @@ void adicionar_cliente(Fila* fila, Cliente* novo_cliente) {
         atual->prox = novo_cliente;
     }
 
-
     sem_post(&fila->sem_lock); // Libera o semáforo
     
     if (fila->tamanho % 20 == 0) {
@@ -118,7 +117,6 @@ void adicionar_cliente(Fila* fila, Cliente* novo_cliente) {
     }
 
 }
-
 
 
 void remover_cliente(Fila* fila, Cliente *cliente) {
@@ -129,10 +127,10 @@ void remover_cliente(Fila* fila, Cliente *cliente) {
         cliente_removido = fila->inicio;
         fila->inicio = fila->inicio->prox;
         fila->tamanho--;
+        free(cliente_removido);
     }else {
         printf("Fila vazia! Nenhum cliente para remover.\n");
     }
-    free(cliente_removido);
     sem_post(&fila->sem_lock); // Libera o semáforo
 }
 
@@ -169,8 +167,6 @@ void* menu (void* args){
 }
 
 void criar_cliente(Cliente *cliente, clock_t inicio) {
-    
-   
     pid_t pid_cliente;
 
     pid_cliente = fork();
@@ -200,6 +196,7 @@ void criar_cliente(Cliente *cliente, clock_t inicio) {
     }
 
     sem_wait(sem_demanda);
+    usleep(300000);
 
     // Lê o tempo gerado pelo cliente
 
@@ -208,13 +205,17 @@ void criar_cliente(Cliente *cliente, clock_t inicio) {
         fscanf(demanda, "%d", &cliente->paciencia);
         printf("paciencia pegada do demanda.txt: %d \n", cliente->paciencia);
         fclose(demanda);
+
+        if (cliente->paciencia ==0) {
+            cliente->paciencia = 1; 
+        }
+
     } else {
         perror("Erro ao abrir demanda.txt");
         cliente->paciencia = -1; // Marca erro
     }
 
     sem_post(sem_demanda); // Libera o acesso ao arquivo
-
 
 }
 

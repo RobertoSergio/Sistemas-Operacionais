@@ -18,13 +18,12 @@ typedef struct Cliente {
 // Estrutura da Fila
 typedef struct Fila {
     Cliente* inicio;    
-    long clock_inicio;
-    pid_t pid_cliente;
-    pid_t pid_analista;                
+    long clock_inicio;           
     int capacidade;         
     int tamanho;             
     int paciencia;           
-    sem_t sem_lock;          
+    sem_t sem_lock;
+    sem_t sem_fim;     
 } Fila;
 
 // Protótipos das funções

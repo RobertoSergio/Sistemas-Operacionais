@@ -15,18 +15,20 @@ int main(int argc, char* argv[]) {
     inicio = clock();
     
 	sem_unlink("sem_atend");
+    sem_unlink("sem_block");
 	sem_unlink("sem_cliente");
     sem_unlink("sem_demanda");
 
 
 
 
-    if (argc != 2) {
+    if (argc != 3) {
         printf("Erro na entrada, inicialize de maneira válida: ./main numero_de_clientes");
         exit(0); // Retorna erro
     }
 
     int n_clientes = atoi(argv[1]);
+    int paciencia = atoi(argv[2]);
 
     printf("numero de clientes: %d\n \n", n_clientes);
     
@@ -37,6 +39,7 @@ int main(int argc, char* argv[]) {
     pthread_t recepcao, atendente,thread_menu;
 
     pthread_create(&recepcao, NULL, recepcao_thread, &fila);
+    sleep(1);
     pthread_create(&atendente, NULL, atendente_thread, &fila);
     pthread_create(&thread_menu, NULL, menu, NULL);
 

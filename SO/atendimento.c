@@ -6,6 +6,7 @@
 #include <semaphore.h>
 #include <pthread.h>
 #include <fcntl.h>
+#include <signal.h>
 
 void* atendente_thread(void* args) {
 
@@ -27,6 +28,16 @@ void* atendente_thread(void* args) {
  * 
  */
 
+    // sem_t *sem_atende = sem_open("/sem_atend", O_RDWR);
+    sem_t *sem_bloque = sem_open("/sem_block", O_RDWR);
+
+// sem_atende == SEM_FAILED || 
+
+    if (sem_bloque == SEM_FAILED) {
+        perror("Erro ao abrir semáforo block");
+        exit(1);
+    }
+
     int satis =0;
     int insatis=0;
 
@@ -38,13 +49,15 @@ void* atendente_thread(void* args) {
         return NULL;
     }
 
-    while (fila->tamanho !=0) {
+    while (1) {        
         sem_wait(&fila->sem_lock);
         Cliente* cliente = fila->inicio;
 
         if (cliente) {
             fila->inicio = cliente->prox;
         }
+
+        
         sem_post(&fila->sem_lock);
 
         if (cliente) {
@@ -55,10 +68,10 @@ void* atendente_thread(void* args) {
 
             printf("TEMPO DECORRIDO: %lf \n", tempo_decorrido);
 
-
+            sem_wait(sem_bloque);
             fprintf(lng, "PID: %d\n", cliente->pid);
             fflush(lng);
-
+            sem_post(sem_bloque);
 
             double tempo_espera = tempo_decorrido - cliente->hora_chegada;
 
@@ -80,11 +93,10 @@ void* atendente_thread(void* args) {
             }
 
             printf("Cliente %d %s\n", cliente->pid, satisfacao ? "Satisfeito" : "Insatisfeito");
-
-            // remover_cliente(fila, cliente);
-            
-            fila->tamanho--;
+            kill(cliente->pid, SIGCONT);
+            // sem_wait(sem_atende);
             free(cliente);
+            // sem_post(sem_atende);
         } else {
             printf("Atendente: Nenhum cliente na fila. Aguardando...\n");
             sleep(1);
@@ -96,7 +108,7 @@ void* atendente_thread(void* args) {
     double taxa_satis = (satis/total)*100;
     double taxa_insatis = (insatis/total)*100;
     printf("Taxa de satisfação: %.2lf", taxa_satis);
-
+    
     return NULL;
 }
 
@@ -130,13 +142,12 @@ void* recepcao_thread(void* args) {
             // Criar cliente
             criar_cliente(novo_cliente, fila->clock_inicio);
             novo_cliente->prox = NULL;
-            usleep(80000);
+            // usleep(80000);
 
             // saleiro para atendimento e adicionar cliente na fila
 
             if (fila->tamanho <= TAMANHO_MAXIMO){
                 adicionar_cliente(fila,novo_cliente);
-                
             }
 
         }
