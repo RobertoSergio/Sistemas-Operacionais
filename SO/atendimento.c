@@ -8,6 +8,28 @@
 #include <fcntl.h>
 
 void* atendente_thread(void* args) {
+
+/**
+ *  pid_analista = fork();
+
+    if (pid_analista == -1) {
+        perror("Erro ao criar processo analista");
+        exit(1);
+    }
+
+    if (pid_analista == 0) {
+        // Processo filho: executa o cliente
+        execl("./analista", "./analista", NULL);
+        perror("Erro ao executar analista");
+        exit(1);
+    }
+ * 
+ * 
+ */
+
+    int satis =0;
+    int insatis=0;
+
     Fila* fila = (Fila*)args;
     FILE* lng = fopen("LNG.txt", "w");
 
@@ -16,7 +38,7 @@ void* atendente_thread(void* args) {
         return NULL;
     }
 
-    while (1) {
+    while (fila->tamanho !=0) {
         sem_wait(&fila->sem_lock);
         Cliente* cliente = fila->inicio;
 
@@ -42,9 +64,26 @@ void* atendente_thread(void* args) {
 
             printf("TEMPO ESPERA: %lf \n", tempo_espera);
             printf("PACIENCIA: %d\n", cliente->paciencia*1000);
-            int satisfeito = (tempo_espera <= cliente->paciencia*1000);
-            printf("Cliente %d %s\n", cliente->pid, satisfeito ? "Satisfeito" : "Insatisfeito");
+            int satisfacao;
+            if (cliente->prioridade == 0){
+                 satisfacao = (tempo_espera <= cliente->paciencia*1000);
+            }
+            
+            if (cliente->prioridade==1) {
+                satisfacao = (tempo_espera <= cliente->paciencia*500);
+            }
 
+            if(satisfacao == 1){
+                satis++;
+            } else{
+                insatis++;
+            }
+
+            printf("Cliente %d %s\n", cliente->pid, satisfacao ? "Satisfeito" : "Insatisfeito");
+
+            // remover_cliente(fila, cliente);
+            
+            fila->tamanho--;
             free(cliente);
         } else {
             printf("Atendente: Nenhum cliente na fila. Aguardando...\n");
@@ -52,15 +91,22 @@ void* atendente_thread(void* args) {
         }
     }
     fclose(lng);
+
+    int total = satis+insatis;
+    double taxa_satis = (satis/total)*100;
+    double taxa_insatis = (insatis/total)*100;
+    printf("Taxa de satisfação: %.2lf", taxa_satis);
+
     return NULL;
 }
 
 void* recepcao_thread(void* args) {
 
-    sem_t *sem_atend, *sem_block;
+    sem_t *sem_atend, *sem_block, * sem_demanda;
 
     sem_atend= sem_open("/sem_atend", O_CREAT, 0644, 1); 
     sem_block = sem_open("/sem_block", O_CREAT, 0644, 1);
+    sem_demanda = sem_open("/sem_demanda", O_CREAT, 0644,1);
 
     Fila* fila = (Fila*)args;
 
@@ -70,9 +116,7 @@ void* recepcao_thread(void* args) {
 
     printf("\n \nA QUANTIDADE DE CLIENTES DA FILA É %d \n \n \n", fila->tamanho);
 
-    srand(time(NULL));
-
-    //se n = 0 ==> fila->clientes == 0;
+        //se n = 0 ==> fila->clientes == 0;
     // criar infinitos clientes
 
     if (fila->tamanho == 0){
@@ -86,11 +130,13 @@ void* recepcao_thread(void* args) {
             // Criar cliente
             criar_cliente(novo_cliente, fila->clock_inicio);
             novo_cliente->prox = NULL;
+            usleep(80000);
 
             // saleiro para atendimento e adicionar cliente na fila
 
             if (fila->tamanho <= TAMANHO_MAXIMO){
                 adicionar_cliente(fila,novo_cliente);
+                
             }
 
         }
@@ -137,3 +183,21 @@ void* recepcao_thread(void* args) {
     return NULL;
 }
 
+void atender(){
+    pid_t pid_analista = fork();
+
+    if (pid_analista == -1) {
+        perror("Erro ao criar processo cliente");
+        exit(1);
+    }
+
+    if (pid_analista == 0) {
+        // Processo filho: executa o cliente
+        execl("./analista", "./analista", NULL);
+        perror("Erro ao executar cliente");
+        exit(1);
+    }
+
+
+
+}

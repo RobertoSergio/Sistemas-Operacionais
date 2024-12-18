@@ -6,6 +6,8 @@
 #include <sys/time.h>
 #include<sys/wait.h>
 #include <unistd.h>
+#include <signal.h>
+#include <fcntl.h>
 
 int contador =0;
 
@@ -119,7 +121,7 @@ void adicionar_cliente(Fila* fila, Cliente* novo_cliente) {
 
 
 
-Cliente* remover_cliente(Fila* fila) {
+void remover_cliente(Fila* fila, Cliente *cliente) {
     sem_wait(&fila->sem_lock); // Bloqueia o semáforo
     Cliente* cliente_removido = NULL; 
 
@@ -130,9 +132,8 @@ Cliente* remover_cliente(Fila* fila) {
     }else {
         printf("Fila vazia! Nenhum cliente para remover.\n");
     }
-
+    free(cliente_removido);
     sem_post(&fila->sem_lock); // Libera o semáforo
-    return cliente_removido;
 }
 
 
@@ -151,7 +152,7 @@ void* menu (void* args){
 
     // ANTES DE SAIR
 
-    // o arquivo deve ser esvaziado antes, isto é, o “Analista” deve ser acordado 
+    // o arquivo LNG.txt deve ser esvaziado antes, isto é, o “Analista” deve ser acordado 
     // tantas vezes quantas forem necessárias para imprimir todos os PID de clientes 
     // que já haviam sido atendidos.
 
@@ -168,30 +169,40 @@ void* menu (void* args){
 }
 
 void criar_cliente(Cliente *cliente, clock_t inicio) {
-    pid_t pid = fork();
-    if (pid == -1) {
+    
+   
+    pid_t pid_cliente;
+
+    pid_cliente = fork();
+
+    if (pid_cliente == -1) {
         perror("Erro ao criar processo cliente");
         exit(1);
     }
 
-    if (pid == 0) {
+    if (pid_cliente == 0) {
         // Processo filho: executa o cliente
         execl("./cliente", "./cliente", NULL);
         perror("Erro ao executar cliente");
         exit(1);
     }
-
-    // Processo pai: registra informações do cliente
+    
     clock_t fim = clock();
-    cliente->pid = pid;
+    cliente->pid = pid_cliente;
     cliente->hora_chegada = converter_clock_micros(inicio, fim);
     cliente->prox = NULL;
     cliente->prioridade = rand()%2;
 
-    // // Espera o cliente finalizar
-    // waitpid(pid, NULL, 0);
+    sem_t *sem_demanda = sem_open("/sem_demanda", O_RDWR);
+    if (sem_demanda == SEM_FAILED) {
+        perror("Erro ao abrir semáforo de demanda");
+        exit(1);
+    }
+
+    sem_wait(sem_demanda);
 
     // Lê o tempo gerado pelo cliente
+
     FILE *demanda = fopen("./demanda.txt", "r");
     if (demanda) {
         fscanf(demanda, "%d", &cliente->paciencia);
@@ -201,25 +212,12 @@ void criar_cliente(Cliente *cliente, clock_t inicio) {
         perror("Erro ao abrir demanda.txt");
         cliente->paciencia = -1; // Marca erro
     }
-    // atribuir_prioridade(cliente);
 
-    // printf("pid: %d \n", cliente->pid);
-    // printf("hora da chegada: %d \n", cliente->hora_chegada);
-    // printf("paciencia: %d \n", cliente->paciencia);
-    // printf("%d\n", contador++);
+    sem_post(sem_demanda); // Libera o acesso ao arquivo
+
 
 }
 
-// void atribuir_prioridade(Cliente* cliente){
-//         if (cliente->paciencia == 1) {
-//             cliente->prioridade = 3;
-//         }
-
-//         if (cliente->paciencia == 5){
-//             cliente->prioridade = 2;
-//         }
-//         cliente->prioridade = 1;
-// }
 
 double converter_clock_micros(clock_t inicio, clock_t fim){
     double tempo_decorrido;

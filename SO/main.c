@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <semaphore.h>
 #include <time.h>
+#include <unistd.h>
 
 extern void* recepcao_thread(void* args);
 extern void* atendente_thread(void* args);
@@ -15,6 +16,9 @@ int main(int argc, char* argv[]) {
     
 	sem_unlink("sem_atend");
 	sem_unlink("sem_cliente");
+    sem_unlink("sem_demanda");
+
+
 
 
     if (argc != 2) {
@@ -44,6 +48,12 @@ int main(int argc, char* argv[]) {
     destruir_fila(&fila);
     sem_unlink("sem_atend");
     sem_unlink("sem_block");
+    sem_unlink("sem_demanda");
+
+    clock_t final = clock();
+    double tempo = converter_clock_micros(inicio, final);
+    printf("tempo total da execução: %lf", tempo);
+
 
     return 0;
 }

@@ -64,7 +64,5 @@ int main() {
     // Pausa novamente
     raise(SIGSTOP);
 
-    // Fechando o semáforo
-    sem_close(sem_block);
     return 0; 
 }

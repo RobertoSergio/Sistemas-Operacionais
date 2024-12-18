@@ -18,7 +18,9 @@ typedef struct Cliente {
 // Estrutura da Fila
 typedef struct Fila {
     Cliente* inicio;    
-    long clock_inicio;                
+    long clock_inicio;
+    pid_t pid_cliente;
+    pid_t pid_analista;                
     int capacidade;         
     int tamanho;             
     int paciencia;           
@@ -28,7 +30,7 @@ typedef struct Fila {
 // Protótipos das funções
 extern void inicializar_fila(Fila* fila, int clientes, clock_t inicio);
 extern void adicionar_cliente(Fila* fila, Cliente* cliente); 
-extern Cliente* remover_cliente(Fila* fila); 
+extern void remover_cliente(Fila* fila, Cliente* cliente); 
 extern void destruir_fila(Fila* fila); 
 extern void* menu(void* args); 
 extern void criar_cliente(Cliente* cliente, clock_t inicio);
