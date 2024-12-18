@@ -1,4 +1,5 @@
 #include "fila.h"
+#include "globais.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -7,11 +8,12 @@
 #include <pthread.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <sys/stat.h>
 
 void* atendente_thread(void* args) {
 
-/**
- *  pid_analista = fork();
+
+    pid_t pid_analista = fork();
 
     if (pid_analista == -1) {
         perror("Erro ao criar processo analista");
@@ -24,12 +26,11 @@ void* atendente_thread(void* args) {
         perror("Erro ao executar analista");
         exit(1);
     }
- * 
- * 
- */
+
 
     sem_t *sem_atend = sem_open("/sem_atend", O_RDWR);
     sem_t *sem_bloque = sem_open("/sem_block", O_RDWR);
+    
 
     if (sem_atend == SEM_FAILED ){
         perror("Erro ao abrir sem atend");
@@ -41,8 +42,6 @@ void* atendente_thread(void* args) {
         exit(1);
     }
 
-    int satis =0;
-    int insatis=0;
 
     Fila* fila = (Fila*)args;
     FILE* lng = fopen("LNG.txt", "w");
@@ -52,7 +51,8 @@ void* atendente_thread(void* args) {
         return NULL;
     }
     int contador = 0;
-    while (1) {        
+    
+    while (executando) {        
         sem_wait(&fila->sem_lock);
         Cliente* cliente = fila->inicio;
 
@@ -101,11 +101,34 @@ void* atendente_thread(void* args) {
             sleep(1);
             contador ++;
             if(contador == 3){
-            break;
+                break;
             }
         }
     }
     fclose(lng);
+
+    // acordar analista
+    kill(pid_analista, SIGCONT);
+    
+    // //TODO em vez de 1 = checagem do tamanho do arquivo lng.txt se maior que zero, tenta abrir
+    // while(1){
+    //     sem_wait(sem_bloque);
+    //     const char *caminho = "LNG.txt";
+    //     struct stat status_arquivo;
+
+    //     // Obtém informações sobre o arquivo
+    //     if (stat(caminho, &status_arquivo) == 0) {
+    //         if (status_arquivo.st_size > 0) {
+    //             sem_post(sem_bloque);
+    //             kill(pid_analista, SIGCONT);
+    //         } else {
+    //             break;
+    //         }
+    //     } else {
+    //         perror("Erro ao acessar o arquivo no atendimento");
+    //     }
+    // }
+
 
     double total = satis+insatis;
     printf("Total de clientes atendidos: %.2lf\n", total);
@@ -140,7 +163,7 @@ void* recepcao_thread(void* args) {
 
     if (fila->tamanho == 0){
 
-        while (1){
+        while (executando){
             Cliente* novo_cliente = (Cliente*)malloc(sizeof(Cliente));
             if (!novo_cliente) {
                 perror("Erro ao alocar memória para novo cliente");
@@ -179,6 +202,9 @@ void* recepcao_thread(void* args) {
         
         sem_wait(sem_atend);
 
+        if(!executando){
+            break;
+        }
 
 
         // if (!fila->inicio) {
@@ -198,21 +224,4 @@ void* recepcao_thread(void* args) {
 
 
     return NULL;
-}
-
-void atender(){
-    pid_t pid_analista = fork();
-
-    if (pid_analista == -1) {
-        perror("Erro ao criar processo cliente");
-        exit(1);
-    }
-
-    if (pid_analista == 0) {
-        // Processo filho: executa o cliente
-        execl("./analista", "./analista", NULL);
-        perror("Erro ao executar cliente");
-        exit(1);
-    }
-
 }

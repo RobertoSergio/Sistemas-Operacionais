@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "fila.h"
+#include "globais.h"
 #include <pthread.h>
 #include <semaphore.h>
 #include <sys/time.h>
@@ -8,9 +9,9 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 int contador =0;
-
 void inicializar_fila(Fila* fila, int clientes, clock_t inicio, double paciencia) {
     fila->inicio = NULL;
     // testar tamanho maximo e quantidade de clientes
@@ -132,34 +133,69 @@ void remover_cliente(Fila* fila, Cliente *cliente) {
 
 
 void* menu (void* args){
-
+    Fila* fila = (Fila*)args;
 // se nao digitar nada ou algo diferente de q fica aqui, se digitar q sai do while
 	while ((getchar()) != 's'); 
 
-    
-    // Esperando ajustes de semáforos
-
-	//sem_close(sem); // pra liberar o arquivo, porque o writer pode querer escrever = coloca sem em verde
-	// sem_unlink("/sem_printer");
-
-
     // ANTES DE SAIR
+
+    //1- parar recepcao e atendimento
+    executando = 0;
+    printf("Parando atendimento e recepção...\n");
+    
+
+    // 2- calcular taxa de satisfação
+    double total = satis+insatis;
+    printf("Total de clientes atendidos: %.2lf\n", total);
+    double taxa_satis = (satis/total)*100;
+    printf("Total de clientes satisfeitos: %.2d\n", satis);
+    double taxa_insatis = (insatis/total)*100;
+    printf("Taxa de satisfação: %.2lf\n", taxa_satis);
+    clock_t fim = clock();
+    double tempo_decorrido = converter_clock_micros(fila->clock_inicio, fim);
+    printf("Tempo Total do programa: %lf \n", tempo_decorrido);
+
+
+    //3 - chamar analista pra printar
+    pid_t pid_analista;
+    FILE *pida = fopen("./pidanalista.txt", "r");
+    fscanf(pida, "%d", &pid_analista);
+    fclose(pida);
+
+
+    while (1){
+        const char *caminho = "LNG.txt";
+        struct stat status_arquivo;
+
+        // Obtém informações sobre o arquivo
+        if (stat(caminho, &status_arquivo) == 0) {
+            if (status_arquivo.st_size > 0) {
+                kill(pid_analista, SIGCONT);
+            } else {
+                break;
+            }
+        } else {
+            perror("Erro ao acessar o arquivo");
+        }
+
+    }
+
+    // kill(pid_analista, SIGCONT);
 
     // o arquivo LNG.txt deve ser esvaziado antes, isto é, o “Analista” deve ser acordado 
     // tantas vezes quantas forem necessárias para imprimir todos os PID de clientes 
     // que já haviam sido atendidos.
-
-    /*
-        abrir lista de LNG e imprimir todos os clientes de lá
-
     
-    */
 
+   
+    destruir_fila(fila);
 
 	exit(0);
 	return NULL;
 
 }
+
+
 
 void criar_cliente(Cliente *cliente, clock_t inicio, double paciencia) {
     pid_t pid_cliente;
@@ -199,21 +235,6 @@ void criar_cliente(Cliente *cliente, clock_t inicio, double paciencia) {
     usleep(300000);
 
     // Lê o tempo gerado pelo cliente
-
-    FILE *demanda = fopen("./demanda.txt", "r");
-    if (demanda) {
-        //fscanf(demanda, "%d", &cliente->paciencia);
-        //printf("paciencia pegada do demanda.txt: %d \n", cliente->paciencia);
-        //fclose(demanda);
-
-        //if (cliente->paciencia ==0) {
-        //    cliente->paciencia = 1; 
-        //}
-
-    } else {
-        perror("Erro ao abrir demanda.txt");
-        cliente->paciencia = -1; // Marca erro
-    }
 
     sem_post(sem_demanda); // Libera o acesso ao arquivo
 

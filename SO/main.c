@@ -1,23 +1,30 @@
 #include "fila.h"
+#include "globais.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <semaphore.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 extern void* recepcao_thread(void* args);
 extern void* atendente_thread(void* args);
 
+int satis =0;
+int insatis=0;
+int executando =1;
+
 int main(int argc, char* argv[]) {
+
 
     clock_t inicio;
     inicio = clock();
     
 	sem_unlink("sem_atend");
     sem_unlink("sem_block");
-	sem_unlink("sem_cliente");
     sem_unlink("sem_demanda");
+    sem_unlink("sem_taxa_s");
 
 
 
@@ -41,7 +48,7 @@ int main(int argc, char* argv[]) {
     pthread_create(&recepcao, NULL, recepcao_thread, &fila);
     usleep(1000);
     pthread_create(&atendente, NULL, atendente_thread, &fila);
-    pthread_create(&thread_menu, NULL, menu, NULL);
+    pthread_create(&thread_menu, NULL, menu, &fila);
 
     pthread_join(recepcao, NULL);
     pthread_join(atendente, NULL);
