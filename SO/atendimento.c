@@ -28,10 +28,13 @@ void* atendente_thread(void* args) {
  * 
  */
 
-    // sem_t *sem_atende = sem_open("/sem_atend", O_RDWR);
+    sem_t *sem_atend = sem_open("/sem_atend", O_RDWR);
     sem_t *sem_bloque = sem_open("/sem_block", O_RDWR);
 
-// sem_atende == SEM_FAILED || 
+    if (sem_atend == SEM_FAILED ){
+        perror("Erro ao abrir sem atend");
+        exit(1);
+    }
 
     if (sem_bloque == SEM_FAILED) {
         perror("Erro ao abrir semáforo block");
@@ -57,8 +60,9 @@ void* atendente_thread(void* args) {
             fila->inicio = cliente->prox;
         }
 
-
+        sem_post(&fila->sem_fim); // libera 1 espaço na fila
         sem_post(&fila->sem_lock);
+        sem_post(sem_atend); // acorda pra atender
 
         if (cliente) {
             contador = 0;
@@ -169,14 +173,13 @@ void* recepcao_thread(void* args) {
         printf("%d\n\n", fila->tamanho);
         // adiciona na fila
         //testar capacidade da fila antes de adicionar
-        if (fila->tamanho < TAMANHO_MAXIMO){
-            // adicionar cliente na fila
-            adicionar_cliente(fila,novo_cliente);
-        }
+        sem_wait(&fila->sem_fim);
 
-        //TODO fazer um buffer pra nao perder os clientes fora da fila?
-        // fila tamanho == 100 => parar criação raise(SIGSTOP) 
-        continue;
+        adicionar_cliente(fila,novo_cliente);
+        
+        sem_wait(sem_atend);
+
+
 
         // if (!fila->inicio) {
         //     fila->inicio = novo_cliente;

@@ -23,7 +23,7 @@ typedef struct Fila {
     int tamanho;             
     int paciencia;           
     sem_t sem_lock;
-    sem_t sem_fim;     
+    sem_t sem_fim;
 } Fila;
 
 // Protótipos das funções

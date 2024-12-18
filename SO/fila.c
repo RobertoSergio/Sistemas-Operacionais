@@ -18,7 +18,7 @@ void inicializar_fila(Fila* fila, int clientes, clock_t inicio, double paciencia
     fila->capacidade = TAMANHO_MAXIMO;
     fila->tamanho = clientes;
     sem_init(&fila->sem_lock, 0, 1);
-    sem_init(&fila->sem_fim, 0, 0); 
+    sem_init(&fila->sem_fim, 0, TAMANHO_MAXIMO); 
     fila->clock_inicio = inicio;
     fila->paciencia = paciencia;
 }
@@ -31,6 +31,7 @@ void destruir_fila(Fila* fila) {
         atual = proximo;
     }
     sem_destroy(&fila->sem_lock);
+    sem_destroy(&fila->sem_fim);
 }
 
 int encontrar_max_prioridade(Cliente* cliente) {
@@ -91,13 +92,6 @@ void radix_sort(Fila* fila) {
 
 void adicionar_cliente(Fila* fila, Cliente* novo_cliente) {
     sem_wait(&fila->sem_lock); // Bloqueia o semáforo
-
-    if (fila->tamanho == fila->capacidade) {
-        printf("Fila cheia! Não é possível adicionar mais clientes.\n");
-        sem_post(&fila->sem_lock);
-        free(novo_cliente); // Libera memória do cliente descartado
-        return;
-    }
 
     // Inserção no final da fila (FIFO)
     novo_cliente->prox = NULL;
