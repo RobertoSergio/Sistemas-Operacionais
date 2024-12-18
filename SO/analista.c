@@ -8,7 +8,7 @@
 
 sem_t *sem_block;
 
-int main() {
+int analista() {
     pid_t pid = getpid();
     FILE* pidfile = fopen("pidanalista.txt", "w");
     if (pidfile == NULL) {

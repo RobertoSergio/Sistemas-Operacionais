@@ -48,7 +48,7 @@ void* atendente_thread(void* args) {
         perror("Erro ao abrir arquivo LNG");
         return NULL;
     }
-
+    int contador = 0;
     while (1) {        
         sem_wait(&fila->sem_lock);
         Cliente* cliente = fila->inicio;
@@ -57,10 +57,11 @@ void* atendente_thread(void* args) {
             fila->inicio = cliente->prox;
         }
 
-        
+
         sem_post(&fila->sem_lock);
 
         if (cliente) {
+            contador = 0;
             printf("Atendente: Atendendo cliente %d...\n", cliente->pid);
             clock_t fim = clock();
 
@@ -76,15 +77,9 @@ void* atendente_thread(void* args) {
             double tempo_espera = tempo_decorrido - cliente->hora_chegada;
 
             printf("TEMPO ESPERA: %lf \n", tempo_espera);
-            printf("PACIENCIA: %d\n", cliente->paciencia*1000);
+            printf("PACIENCIA: %d\n", cliente->paciencia* 1000);
             int satisfacao;
-            if (cliente->prioridade == 0){
-                 satisfacao = (tempo_espera <= cliente->paciencia*1000);
-            }
-            
-            if (cliente->prioridade==1) {
-                satisfacao = (tempo_espera <= cliente->paciencia*500);
-            }
+            satisfacao = (tempo_espera <= cliente->paciencia * 1000);
 
             if(satisfacao == 1){
                 satis++;
@@ -100,15 +95,23 @@ void* atendente_thread(void* args) {
         } else {
             printf("Atendente: Nenhum cliente na fila. Aguardando...\n");
             sleep(1);
+            contador ++;
+            if(contador == 3){
+            break;
+            }
         }
     }
     fclose(lng);
 
-    int total = satis+insatis;
+    double total = satis+insatis;
+    printf("Total de clientes atendidos: %.2lf\n", total);
     double taxa_satis = (satis/total)*100;
+    printf("Total de clientes satisfeitos: %.2d\n", satis);
     double taxa_insatis = (insatis/total)*100;
-    printf("Taxa de satisfação: %.2lf", taxa_satis);
-    
+    printf("Taxa de satisfação: %.2lf\n", taxa_satis);
+    clock_t fim = clock();
+    double tempo_decorrido = converter_clock_micros(fila->clock_inicio, fim);
+    printf("Tempo Total do programa: %lf \n", tempo_decorrido);
     return NULL;
 }
 
@@ -140,7 +143,8 @@ void* recepcao_thread(void* args) {
                 exit(1);
             }      
             // Criar cliente
-            criar_cliente(novo_cliente, fila->clock_inicio);
+            double paciencia = fila->paciencia;
+            criar_cliente(novo_cliente, fila->clock_inicio, paciencia);
             novo_cliente->prox = NULL;
             // usleep(80000);
 
@@ -149,7 +153,6 @@ void* recepcao_thread(void* args) {
             if (fila->tamanho <= TAMANHO_MAXIMO){
                 adicionar_cliente(fila,novo_cliente);
             }
-
         }
     }
 
@@ -160,9 +163,9 @@ void* recepcao_thread(void* args) {
             perror("Erro ao alocar memória para novo cliente");
             exit(1);
         }    
-        
+        double paciencia = fila->paciencia;
         // Criar cliente
-        criar_cliente(novo_cliente, fila->clock_inicio);
+        criar_cliente(novo_cliente, fila->clock_inicio, paciencia);
         printf("%d\n\n", fila->tamanho);
         // adiciona na fila
         //testar capacidade da fila antes de adicionar
@@ -208,7 +211,5 @@ void atender(){
         perror("Erro ao executar cliente");
         exit(1);
     }
-
-
 
 }

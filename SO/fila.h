@@ -27,12 +27,12 @@ typedef struct Fila {
 } Fila;
 
 // Protótipos das funções
-extern void inicializar_fila(Fila* fila, int clientes, clock_t inicio);
+extern void inicializar_fila(Fila* fila, int clientes, clock_t inicio, double paciencia);
 extern void adicionar_cliente(Fila* fila, Cliente* cliente); 
 extern void remover_cliente(Fila* fila, Cliente* cliente); 
 extern void destruir_fila(Fila* fila); 
 extern void* menu(void* args); 
-extern void criar_cliente(Cliente* cliente, clock_t inicio);
+extern void criar_cliente(Cliente* cliente, clock_t inicio, double paciencia);
 // extern void atribuir_prioridade(Cliente* cliente);
 double converter_clock_micros(clock_t inicio, clock_t fim);
 

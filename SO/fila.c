@@ -11,7 +11,7 @@
 
 int contador =0;
 
-void inicializar_fila(Fila* fila, int clientes, clock_t inicio) {
+void inicializar_fila(Fila* fila, int clientes, clock_t inicio, double paciencia) {
     fila->inicio = NULL;
     // testar tamanho maximo e quantidade de clientes
 
@@ -20,6 +20,7 @@ void inicializar_fila(Fila* fila, int clientes, clock_t inicio) {
     sem_init(&fila->sem_lock, 0, 1);
     sem_init(&fila->sem_fim, 0, 0); 
     fila->clock_inicio = inicio;
+    fila->paciencia = paciencia;
 }
 
 void destruir_fila(Fila* fila) {
@@ -166,7 +167,7 @@ void* menu (void* args){
 
 }
 
-void criar_cliente(Cliente *cliente, clock_t inicio) {
+void criar_cliente(Cliente *cliente, clock_t inicio, double paciencia) {
     pid_t pid_cliente;
 
     pid_cliente = fork();
@@ -188,6 +189,11 @@ void criar_cliente(Cliente *cliente, clock_t inicio) {
     cliente->hora_chegada = converter_clock_micros(inicio, fim);
     cliente->prox = NULL;
     cliente->prioridade = rand()%2;
+    if(cliente->prioridade == 0 ){
+        cliente->paciencia = paciencia;
+    }else{
+        cliente->paciencia = paciencia/2;
+    }
 
     sem_t *sem_demanda = sem_open("/sem_demanda", O_RDWR);
     if (sem_demanda == SEM_FAILED) {
@@ -202,13 +208,13 @@ void criar_cliente(Cliente *cliente, clock_t inicio) {
 
     FILE *demanda = fopen("./demanda.txt", "r");
     if (demanda) {
-        fscanf(demanda, "%d", &cliente->paciencia);
-        printf("paciencia pegada do demanda.txt: %d \n", cliente->paciencia);
-        fclose(demanda);
+        //fscanf(demanda, "%d", &cliente->paciencia);
+        //printf("paciencia pegada do demanda.txt: %d \n", cliente->paciencia);
+        //fclose(demanda);
 
-        if (cliente->paciencia ==0) {
-            cliente->paciencia = 1; 
-        }
+        //if (cliente->paciencia ==0) {
+        //    cliente->paciencia = 1; 
+        //}
 
     } else {
         perror("Erro ao abrir demanda.txt");

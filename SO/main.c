@@ -28,18 +28,18 @@ int main(int argc, char* argv[]) {
     }
 
     int n_clientes = atoi(argv[1]);
-    int paciencia = atoi(argv[2]);
+    double paciencia = atoi(argv[2]);
 
     printf("numero de clientes: %d\n \n", n_clientes);
     
-    
+    printf("Paciência dos clientes: %lf\n \n", paciencia);
     Fila fila;
-    inicializar_fila(&fila, n_clientes, inicio);
+    inicializar_fila(&fila, n_clientes, inicio, paciencia);
 
     pthread_t recepcao, atendente,thread_menu;
 
     pthread_create(&recepcao, NULL, recepcao_thread, &fila);
-    sleep(1);
+    usleep(1000);
     pthread_create(&atendente, NULL, atendente_thread, &fila);
     pthread_create(&thread_menu, NULL, menu, NULL);
 
