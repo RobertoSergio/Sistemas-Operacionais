@@ -9,9 +9,11 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+
+extern sem_t semaforo;
 
 void* atendente_thread(void* args) {
-
 
     pid_t pid_analista = fork();
 
@@ -66,7 +68,7 @@ void* atendente_thread(void* args) {
 
         if (cliente) {
             contador = 0;
-            printf("Atendente: Atendendo cliente %d...\n", cliente->pid);
+            printf("\nAtendente: Atendendo cliente %d...\n", cliente->pid);
             clock_t fim = clock();
 
             double tempo_decorrido = converter_clock_micros(fila->clock_inicio, fim);
@@ -107,8 +109,9 @@ void* atendente_thread(void* args) {
     }
     fclose(lng);
 
+    
     // acordar analista
-    kill(pid_analista, SIGCONT);
+    // kill(pid_analista, SIGCONT);
     
     // //TODO em vez de 1 = checagem do tamanho do arquivo lng.txt se maior que zero, tenta abrir
     // while(1){
@@ -129,21 +132,47 @@ void* atendente_thread(void* args) {
     //     }
     // }
 
-
+    
     double total = satis+insatis;
-    printf("Total de clientes atendidos: %.2lf\n", total);
-    double taxa_satis = (satis/total)*100;
-    printf("Total de clientes satisfeitos: %.2d\n", satis);
-    double taxa_insatis = (insatis/total)*100;
-    printf("Taxa de satisfação: %.2lf\n", taxa_satis);
-    clock_t fim = clock();
-    double tempo_decorrido = converter_clock_micros(fila->clock_inicio, fim);
-    printf("Tempo Total do programa: %lf \n", tempo_decorrido);
+    double taxa_satisfacao = (satis/total)*100;
+    if (taxa_satis != taxa_satisfacao){
+        printf("Total de clientes atendidos na thread: %.2lf\n", total);
+    
+        printf("Total de clientes satisfeitos na thread: %.2d\n", satis);
+        double taxa_insatis = (insatis/total)*100;
+        printf("Taxa de satisfação na thread: %.2lf\n", taxa_satisfacao);
+        clock_t fim = clock();
+        double tempo_decorrido = converter_clock_micros(fila->clock_inicio, fim);
+        printf("Tempo Total do programa na thread: %lf \n", tempo_decorrido);
+    }
+    
+    
+    while (1){
+        const char *caminho = "LNG.txt";
+        struct stat status_arquivo;
+
+        // Obtém informações sobre o arquivo
+        if (stat(caminho, &status_arquivo) == 0) {
+            if (status_arquivo.st_size > 0) {
+                kill(pid_analista, SIGCONT);
+            } else {
+                break;
+            }
+        } else {
+            perror("Erro ao acessar o arquivo");
+        }
+    }
+    
+    sem_close(sem_atend);
+    sem_close(sem_bloque);
+
+    pula_menu = 1;
+    sem_post(&semaforo);
+    
     return NULL;
 }
 
 void* recepcao_thread(void* args) {
-
     sem_t *sem_atend, *sem_block, * sem_demanda;
 
     sem_atend= sem_open("/sem_atend", O_CREAT, 0644, 1); 
@@ -158,8 +187,6 @@ void* recepcao_thread(void* args) {
 
     printf("\n \nA QUANTIDADE DE CLIENTES DA FILA É %d \n \n \n", fila->tamanho);
 
-        //se n = 0 ==> fila->clientes == 0;
-    // criar infinitos clientes
 
     if (fila->tamanho == 0){
 
@@ -174,8 +201,6 @@ void* recepcao_thread(void* args) {
             criar_cliente(novo_cliente, fila->clock_inicio, paciencia);
             novo_cliente->prox = NULL;
             // usleep(80000);
-
-            // saleiro para atendimento e adicionar cliente na fila
 
             if (fila->tamanho <= TAMANHO_MAXIMO){
                 adicionar_cliente(fila,novo_cliente);
@@ -193,7 +218,6 @@ void* recepcao_thread(void* args) {
         double paciencia = fila->paciencia;
         // Criar cliente
         criar_cliente(novo_cliente, fila->clock_inicio, paciencia);
-        printf("%d\n\n", fila->tamanho);
         // adiciona na fila
         //testar capacidade da fila antes de adicionar
         sem_wait(&fila->sem_fim);
@@ -206,22 +230,11 @@ void* recepcao_thread(void* args) {
             break;
         }
 
-
-        // if (!fila->inicio) {
-        //     fila->inicio = novo_cliente;
-        // } else {
-        //     Cliente* atual = fila->inicio;
-        //     while (atual->prox) {
-        //         atual = atual->prox;
-        //     }
-        //     atual->prox = novo_cliente;
-        // }
-
-        // printf("Recepção: Cliente %d criado com prioridade %d e paciência %d ms\n",
-        //        novo_cliente->pid, novo_cliente->prioridade, novo_cliente->paciencia);
-
     }
 
 
+    sem_close(sem_atend);
+    sem_close(sem_block);
+    sem_post(&semaforo);
     return NULL;
 }

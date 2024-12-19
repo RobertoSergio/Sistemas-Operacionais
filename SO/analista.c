@@ -7,7 +7,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-
 sem_t *sem_block;
 
 void ler_imprimir (){
@@ -19,13 +18,18 @@ void ler_imprimir (){
         exit(EXIT_FAILURE);
     }
 
-
     fseek(LNG, 0, SEEK_END);  
     long file_size = ftell(LNG); 
     fseek(LNG, 0, SEEK_SET); 
 
     char *restante = malloc(file_size + 1);
-
+    if (restante == NULL) {
+        perror("Erro ao alocar memória");
+        sem_post(sem_block);
+        sem_close(sem_block);
+        exit(EXIT_FAILURE);
+    }
+    restante[0] = '\0'; //
 
     // Lê os primeiros 10 valores de LNG.txt e imprime
     //malloc size of LNG.txt
@@ -41,7 +45,15 @@ void ler_imprimir (){
     }
 
     // Limpa o arquivo e escreve o restante dos dados
-    freopen("LNG.txt", "w", LNG);
+    fclose(LNG);
+    LNG = fopen("LNG.txt", "w");
+    if (LNG == NULL) {
+        perror("Erro ao reabrir LNG.txt");
+        sem_post(sem_block);
+        // sem_close(sem_block);
+        exit(EXIT_FAILURE);
+    }
+
     fprintf(LNG, "%s", restante);
     fclose(LNG);
 
@@ -78,6 +90,15 @@ int main() {
 
     // // Pausa novamente
     // raise(SIGSTOP);
+
+    // sem_analista = sem_open("/sem_analista", O_RDWR);
+
+    // sem_wait(sem_analista);
+
+    // if (sem_block == SEM_FAILED) {
+    //     perror("Erro ao abrir o semáforo do analista\n");
+    //     exit(EXIT_FAILURE);
+    // }
 
     while (1){
         const char *caminho = "LNG.txt";

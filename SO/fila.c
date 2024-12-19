@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+
 int contador =0;
 void inicializar_fila(Fila* fila, int clientes, clock_t inicio, double paciencia) {
     fila->inicio = NULL;
@@ -146,14 +147,14 @@ void* menu (void* args){
 
     // 2- calcular taxa de satisfação
     double total = satis+insatis;
-    printf("Total de clientes atendidos: %.2lf\n", total);
-    double taxa_satis = (satis/total)*100;
-    printf("Total de clientes satisfeitos: %.2d\n", satis);
+    printf("Total de clientes atendidos após interrupcao: %.2lf\n", total);
+    taxa_satis = (satis/total)*100;
+    printf("Total de clientes satisfeitos após interrupção: %.2d\n", satis);
     double taxa_insatis = (insatis/total)*100;
-    printf("Taxa de satisfação: %.2lf\n", taxa_satis);
+    printf("Taxa de satisfação apos interrupcao: %.2lf\n", taxa_satis);
     clock_t fim = clock();
     double tempo_decorrido = converter_clock_micros(fila->clock_inicio, fim);
-    printf("Tempo Total do programa: %lf \n", tempo_decorrido);
+    printf("Tempo Total do programa apos interrupcao: %lf \n", tempo_decorrido);
 
 
     //3 - chamar analista pra printar
@@ -179,6 +180,7 @@ void* menu (void* args){
         }
 
     }
+    sleep(1);
 
     // kill(pid_analista, SIGCONT);
 
@@ -189,8 +191,8 @@ void* menu (void* args){
 
    
     destruir_fila(fila);
-
-	exit(0);
+    
+	// exit(0);
 	return NULL;
 
 }
