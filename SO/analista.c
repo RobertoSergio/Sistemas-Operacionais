@@ -23,6 +23,7 @@ void ler_imprimir (){
     long file_size = ftell(LNG); 
     fseek(LNG, 0, SEEK_SET); 
 
+    //malloc size of LNG.txt
     char *restante = malloc(file_size + 1);
     if (restante == NULL) {
         perror("Erro ao alocar memória");
@@ -33,7 +34,6 @@ void ler_imprimir (){
     restante[0] = '\0'; //
 
     // Lê os primeiros 10 valores de LNG.txt e imprime
-    //malloc size of LNG.txt
     char buffer[1024];
     int linha = 0;
     while (fgets(buffer, sizeof(buffer), LNG) != NULL) {
@@ -88,22 +88,6 @@ int main() {
     // Quando acordado:
     // Bloqueia acesso ao arquivo compartilhado
     sem_wait(sem_block);
-
-    // ler_imprimir ();
-
-    // sem_post(sem_block); // Libera arquivo compartilahdo
-
-    // // Pausa novamente
-    // raise(SIGSTOP);
-
-    // sem_analista = sem_open("/sem_analista", O_RDWR);
-
-    // sem_wait(sem_analista);
-
-    // if (sem_block == SEM_FAILED) {
-    //     perror("Erro ao abrir o semáforo do analista\n");
-    //     exit(EXIT_FAILURE);
-    // }
 
     while (1){
         const char *caminho = "LNG.txt";

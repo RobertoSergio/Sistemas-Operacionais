@@ -95,42 +95,18 @@ void* atendente_thread(void* args) {
 
             printf("Cliente %d %s\n", cliente->pid, satisfacao ? "Satisfeito" : "Insatisfeito");
             kill(cliente->pid, SIGCONT);
-            // sem_wait(sem_atende);
             free(cliente);
-            // sem_post(sem_atende);
+
         } else {
             printf("Atendente: Nenhum cliente na fila. Aguardando...\n");
             usleep(500000);
             contador ++;
-            if(contador == 3){
+            if(contador == 2){
                 break;
             }
         }
     }
     fclose(lng);
-
-    
-    // acordar analista
-    // kill(pid_analista, SIGCONT);
-    
-    // //TODO em vez de 1 = checagem do tamanho do arquivo lng.txt se maior que zero, tenta abrir
-    // while(1){
-    //     sem_wait(sem_bloque);
-    //     const char *caminho = "LNG.txt";
-    //     struct stat status_arquivo;
-
-    //     // Obtém informações sobre o arquivo
-    //     if (stat(caminho, &status_arquivo) == 0) {
-    //         if (status_arquivo.st_size > 0) {
-    //             sem_post(sem_bloque);
-    //             kill(pid_analista, SIGCONT);
-    //         } else {
-    //             break;
-    //         }
-    //     } else {
-    //         perror("Erro ao acessar o arquivo no atendimento");
-    //     }
-    // }
 
     
     double total = satis+insatis;
@@ -202,9 +178,10 @@ void* recepcao_thread(void* args) {
             novo_cliente->prox = NULL;
             // usleep(80000);
 
-            if (fila->tamanho <= TAMANHO_MAXIMO){
-                adicionar_cliente(fila,novo_cliente);
-            }
+            
+            sem_wait(&fila->sem_fim);
+            adicionar_cliente(fila,novo_cliente);
+    
         }
     }
 

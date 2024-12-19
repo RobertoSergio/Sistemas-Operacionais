@@ -30,10 +30,10 @@ extern void inicializar_fila(Fila* fila, int clientes, clock_t inicio, double pa
 extern void adicionar_cliente(Fila* fila, Cliente* cliente); 
 extern void remover_cliente(Fila* fila, Cliente* cliente); 
 extern void destruir_fila(Fila* fila); 
+void radix_sort(Fila* fila);
 extern void* menu(void* args); 
 extern void criar_cliente(Cliente* cliente, clock_t inicio, double paciencia);
 double converter_clock_micros(clock_t inicio, clock_t fim);
-//double calcular_tempo_paciencia(Cliente* cliente);
 int encontrar_max_prioridade(Cliente* cliente);
 
 

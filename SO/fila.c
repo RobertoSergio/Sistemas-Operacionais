@@ -15,8 +15,6 @@
 int contador =0;
 void inicializar_fila(Fila* fila, int clientes, clock_t inicio, double paciencia) {
     fila->inicio = NULL;
-    // testar tamanho maximo e quantidade de clientes
-
     fila->capacidade = TAMANHO_MAXIMO;
     fila->tamanho = clientes;
     sem_init(&fila->sem_lock, 0, 1);
@@ -134,6 +132,9 @@ void remover_cliente(Fila* fila, Cliente *cliente) {
 
 
 void* menu (void* args){
+    if(pula_menu==1){
+        pthread_exit(NULL);
+    }
     Fila* fila = (Fila*)args;
 // se nao digitar nada ou algo diferente de q fica aqui, se digitar q sai do while
 	while ((getchar()) != 's'); 
