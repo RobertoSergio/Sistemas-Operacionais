@@ -219,18 +219,7 @@ void criar_cliente(Cliente *cliente, clock_t inicio, double paciencia) {
         cliente->paciencia = paciencia/2;
     }
 
-    sem_t *sem_demanda = sem_open("/sem_demanda", O_RDWR);
-    if (sem_demanda == SEM_FAILED) {
-        perror("Erro ao abrir semáforo de demanda");
-        exit(1);
-    }
-
-    sem_wait(sem_demanda);
     usleep(300000);
-
-    // Lê o tempo gerado pelo cliente
-
-    sem_post(sem_demanda); // Libera o acesso ao arquivo
 
 }
 

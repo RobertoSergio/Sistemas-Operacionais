@@ -149,11 +149,10 @@ void* atendente_thread(void* args) {
 }
 
 void* recepcao_thread(void* args) {
-    sem_t *sem_atend, *sem_block, * sem_demanda;
+    sem_t *sem_atend, *sem_block;
 
     sem_atend= sem_open("/sem_atend", O_CREAT, 0644, 1); 
     sem_block = sem_open("/sem_block", O_CREAT, 0644, 1);
-    sem_demanda = sem_open("/sem_demanda", O_CREAT, 0644,1);
 
     Fila* fila = (Fila*)args;
 

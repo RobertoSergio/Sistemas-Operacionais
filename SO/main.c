@@ -29,7 +29,6 @@ int main(int argc, char* argv[]) {
     
 	sem_unlink("sem_atend");
     sem_unlink("sem_block");
-    sem_unlink("sem_demanda");
 
     sem_t *sem_analista;
     sem_analista = sem_open("/sem_analista", O_CREAT, 0644,0);
@@ -69,7 +68,6 @@ int main(int argc, char* argv[]) {
     destruir_fila(&fila);
     sem_unlink("sem_atend");
     sem_unlink("sem_block");
-    sem_unlink("sem_demanda");
 
     clock_t final = clock();
     double tempo = converter_clock_micros(inicio, final);
