@@ -31,6 +31,9 @@ int main(int argc, char* argv[]) {
     sem_unlink("sem_block");
     sem_unlink("sem_demanda");
 
+    sem_t *sem_analista;
+    sem_analista = sem_open("/sem_analista", O_CREAT, 0644,0);
+
 
     if (argc != 3) {
         printf("Erro na entrada, inicialize de maneira válida: ./main numero_de_clientes");
@@ -38,7 +41,7 @@ int main(int argc, char* argv[]) {
     }
 
     int n_clientes = atoi(argv[1]);
-    double paciencia = atoi(argv[2]);
+    double paciencia = strtod(argv[2], NULL);
 
     printf("numero de clientes: %d\n \n", n_clientes);
     
@@ -70,7 +73,9 @@ int main(int argc, char* argv[]) {
 
     clock_t final = clock();
     double tempo = converter_clock_micros(inicio, final);
-    printf("Tempo total da execução: %lf\n", tempo);
+
+    sem_wait(sem_analista);
+    printf("Tempo total da execução: %.4lfms\n", tempo);
 
     return 0;
 }

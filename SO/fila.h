@@ -10,7 +10,7 @@ typedef struct Cliente {
     int pid;                 
     double hora_chegada;        
     int prioridade;          
-    int paciencia;           
+    double paciencia;           
     struct Cliente* prox;   
 } Cliente;
 
@@ -21,20 +21,20 @@ typedef struct Fila {
     long clock_inicio;           
     int capacidade;         
     int tamanho;             
-    int paciencia;           
+    double paciencia;           
     sem_t sem_lock;
     sem_t sem_fim;
 } Fila;
 
-// Protótipos das funções
 extern void inicializar_fila(Fila* fila, int clientes, clock_t inicio, double paciencia);
 extern void adicionar_cliente(Fila* fila, Cliente* cliente); 
 extern void remover_cliente(Fila* fila, Cliente* cliente); 
 extern void destruir_fila(Fila* fila); 
 extern void* menu(void* args); 
 extern void criar_cliente(Cliente* cliente, clock_t inicio, double paciencia);
-// extern void atribuir_prioridade(Cliente* cliente);
 double converter_clock_micros(clock_t inicio, clock_t fim);
+//double calcular_tempo_paciencia(Cliente* cliente);
+int encontrar_max_prioridade(Cliente* cliente);
 
 
 #endif

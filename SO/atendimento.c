@@ -83,9 +83,9 @@ void* atendente_thread(void* args) {
             double tempo_espera = tempo_decorrido - cliente->hora_chegada;
 
             printf("TEMPO ESPERA: %lf \n", tempo_espera);
-            printf("PACIENCIA: %d\n", cliente->paciencia* 1000);
+            printf("PACIENCIA: %.2lf\n", cliente->paciencia);
             int satisfacao;
-            satisfacao = (tempo_espera <= cliente->paciencia * 1000);
+            satisfacao = (tempo_espera <= cliente->paciencia);
 
             if(satisfacao == 1){
                 satis++;
@@ -100,7 +100,7 @@ void* atendente_thread(void* args) {
             // sem_post(sem_atende);
         } else {
             printf("Atendente: Nenhum cliente na fila. Aguardando...\n");
-            sleep(1);
+            usleep(500000);
             contador ++;
             if(contador == 3){
                 break;
@@ -140,10 +140,10 @@ void* atendente_thread(void* args) {
     
         printf("Total de clientes satisfeitos na thread: %.2d\n", satis);
         double taxa_insatis = (insatis/total)*100;
-        printf("Taxa de satisfação na thread: %.2lf\n", taxa_satisfacao);
+        printf("Taxa de satisfação na thread: %.2lf por cento\n", taxa_satisfacao);
         clock_t fim = clock();
         double tempo_decorrido = converter_clock_micros(fila->clock_inicio, fim);
-        printf("Tempo Total do programa na thread: %lf \n", tempo_decorrido);
+        printf("Tempo Total do programa na thread: %.4lfms \n", tempo_decorrido);
     }
     
     

@@ -147,14 +147,14 @@ void* menu (void* args){
 
     // 2- calcular taxa de satisfação
     double total = satis+insatis;
-    printf("Total de clientes atendidos após interrupcao: %.2lf\n", total);
+    printf("Total de clientes atendidos após interrupcao: %.0lf\n", total);
     taxa_satis = (satis/total)*100;
-    printf("Total de clientes satisfeitos após interrupção: %.2d\n", satis);
+    printf("Total de clientes satisfeitos após interrupção: %d\n", satis);
     double taxa_insatis = (insatis/total)*100;
-    printf("Taxa de satisfação apos interrupcao: %.2lf\n", taxa_satis);
+    printf("Taxa de satisfação apos interrupcao: %.2lf por cento\n", taxa_satis);
     clock_t fim = clock();
     double tempo_decorrido = converter_clock_micros(fila->clock_inicio, fim);
-    printf("Tempo Total do programa apos interrupcao: %lf \n", tempo_decorrido);
+    printf("Tempo Total do programa apos interrupcao: %.4lfms \n", tempo_decorrido);
 
 
     //3 - chamar analista pra printar
@@ -181,18 +181,9 @@ void* menu (void* args){
 
     }
     sleep(1);
-
-    // kill(pid_analista, SIGCONT);
-
-    // o arquivo LNG.txt deve ser esvaziado antes, isto é, o “Analista” deve ser acordado 
-    // tantas vezes quantas forem necessárias para imprimir todos os PID de clientes 
-    // que já haviam sido atendidos.
-    
-
    
     destruir_fila(fila);
     
-	// exit(0);
 	return NULL;
 
 }
@@ -242,29 +233,10 @@ void criar_cliente(Cliente *cliente, clock_t inicio, double paciencia) {
 
 }
 
-
+// estava em microssegundos, atualizamos para milissegundos, mas nao alteramos no restante ainda
 double converter_clock_micros(clock_t inicio, clock_t fim){
     double tempo_decorrido;
     tempo_decorrido = (double)(fim - inicio) / CLOCKS_PER_SEC; // Tempo em segundos
-    tempo_decorrido *= 1000000; // Converte para microssegundos
+    tempo_decorrido *= 1000; // Converte para milissegundos
     return tempo_decorrido;
 }
-
-
-
-
-// long get_current_time_micros() {
-//     struct timeval tv;
-//     gettimeofday(&tv, NULL);
-//     return (tv.tv_sec * 1000000LL) + tv.tv_usec; // Retorna o tempo em microssegundos
-// }
-
-
-// void iniciar_programa(long start_time) {
-//     start_time = get_current_time_micros();  // Salva o tempo inicial
-// }
-
-// long tempo_decorrido(long start_time) {
-//     long current_time = get_current_time_micros();
-//     return current_time - start_time;  // Tempo decorrido em microssegundos
-// }

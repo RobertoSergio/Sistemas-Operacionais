@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 
 sem_t *sem_block;
+int linha_pid =1;
 
 void ler_imprimir (){
     FILE* LNG = fopen("LNG.txt", "r+");
@@ -37,7 +38,8 @@ void ler_imprimir (){
     int linha = 0;
     while (fgets(buffer, sizeof(buffer), LNG) != NULL) {
         if (linha < 10) {
-            printf("Linha %d: %s", linha + 1, buffer); // Imprime as primeiras 10 linhas
+            printf("Linha %d: %s", linha_pid, buffer); // Imprime as primeiras 10 linhas
+            linha_pid++;
         } else {
             strcat(restante, buffer); // Armazena o restante das linhas
         }
@@ -61,6 +63,9 @@ void ler_imprimir (){
 }
 
 int main() {
+    sem_t *sem_analista;
+    sem_analista = sem_open("/sem_analista", O_RDWR);
+
     pid_t pid = getpid();
     FILE* pidfile = fopen("pidanalista.txt", "w");
     if (pidfile == NULL) {
@@ -118,6 +123,7 @@ int main() {
     }
 
     sem_post(sem_block); 
+    sem_post(sem_analista);
 
     return 0; 
 }
